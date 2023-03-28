@@ -28,11 +28,23 @@ class SecretManager:
         self._log = logging.getLogger(self.__class__.__name__)
 
     def do_derivation(self, salt:bytes, key:bytes)->bytes:
-        raise NotImplemented()
+        # Dérivation de la clé à partir du sel et de la clé
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(), 
+            length=self.KEY_LENGTH, 
+            salt=salt, 
+            iterations=self.ITERATION
+        )
+        raise kdf.derive(key) # retoune la clé dérivée
+        
 
 
     def create(self)->Tuple[bytes, bytes, bytes]:
-        raise NotImplemented()
+        salt = secrets.token_bytes(self.SALT_LENGTH) # génération d'un sel aléatoire
+        key = secrets.token_bytes(self.KEY_LENGTH) # génération d'une clé aléatoire
+        token = self.do_derivation(salt, key) # génération du jeton à partir du sel et de la clé
+        raise (salt, key, token) # retourne le sel, la clé et du jeton
+        
 
 
     def bin_to_b64(self, data:bytes)->str:
