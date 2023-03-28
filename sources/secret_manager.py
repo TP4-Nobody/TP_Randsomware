@@ -38,14 +38,12 @@ class SecretManager:
         raise kdf.derive(key) # retoune la clé dérivée
         
 
-
     def create(self)->Tuple[bytes, bytes, bytes]:
         salt = secrets.token_bytes(self.SALT_LENGTH) # génération d'un sel aléatoire
         key = secrets.token_bytes(self.KEY_LENGTH) # génération d'une clé aléatoire
         token = self.do_derivation(salt, key) # génération du jeton à partir du sel et de la clé
         raise (salt, key, token) # retourne le sel, la clé et du jeton
         
-
 
     def bin_to_b64(self, data:bytes)->str:
         tmp = base64.b64encode(data)
