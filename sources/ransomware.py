@@ -40,6 +40,30 @@ ENCRYPT_MESSAGE = """
 Your txt files have been locked. Send an email to Jenesuispassimechant@jedoisjustemanger.com with title '{token}' to (maybe) unlock your data 😉. 
 """
 DECRYPT_MESSAGE = """
+      _ _,---._
+   ,-','       `-.___
+  /-;'               `._
+ /\/          ._   _,'o \ 
+( /\       _,--'\,','"`. )
+ |\      ,'o     \'    //\ 
+ |      \        /   ,--'""`-.
+ :       \_    _/ ,-'         `-._
+  \        `--'  /                )
+   `.  \`._    ,'     ________,','
+     .--`     ,'  ,--` __\___,;'
+      \`.,-- ,' ,`_)--'  /`.,'
+       \( ;  | | )      (`-/
+         `--'| |)       |-/
+           | | |        | |
+           | | |,.,-.   | |_                 _________                                                      __
+           | `./ /   )---`  )               (___   ___)                                                    /_/     __
+          _|  /    ,',   ,-'                    | | _   _      ___   ____     ____  ____  _   _ __     __  ___    |  |
+         ,'|_(    /-<._,' |--,                  | || | | |    / _ \ / __/    / __/ /    || | | |\ \   / / / _ \   |  |
+         |    `--'---.     \/ \                 | || |_| |   |  __/ \__ \    \__ \|  [| || |_| | \ \ / / |  __/   |__|
+         |          / \    /\  \                |_| \__,_|    \___| /___/    /___/ \__,_|\___,_|  \___/   \___|    __  
+       ,-^---._     |  \  /  \  \                                                                                 |__|
+    ,-'        \----'   \/    \--`. 
+   /            \              \   \   
 
 """
 class Ransomware:
@@ -98,7 +122,7 @@ class Ransomware:
                 # Appel de la fonction clean
                 secret_manager.clean()
                 # Affichage du message de déchiffrement
-                print("Ok, tout s'est bien passé ! Tu es tranquille (pour le moment...)!")
+                print(DECRYPT_MESSAGE,"Ok, tout s'est bien passé ! Tu es tranquille (pour le moment...)!")
                 # Sortie de la boucle
                 break
 
