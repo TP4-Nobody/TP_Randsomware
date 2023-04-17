@@ -17,6 +17,11 @@ class CNC(CNCBase):
         with open(path, "wb") as f:
             f.write(bin_data)
 
+    def get_ping(self, path:str, params:dict)->dict:
+        # used to check if cnc is alive
+        print ("ping")
+        return {"status":"Success"}
+
     def post_new(self, path:str, params:dict, body:dict)->dict:
         # used to register new ransomware instance
         token = body["token"] # récupération du token
